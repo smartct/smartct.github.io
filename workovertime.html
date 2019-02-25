@@ -24,8 +24,233 @@
 </body>
 <script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
 <script>
-var contractAddress = '0xde856446a16a7c24a9819767be3d05583aa3063d';
-var abi = [{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"set","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"}];
+var contractAddress = '0xb93983816ebf864b3b64b4d378955a82282ffc45';
+var abi = [
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "deposit",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "requestPayment",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "setEndTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "setStartTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferEth",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawEth",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "balances",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getEndTime",
+		"outputs": [
+			{
+				"name": "hour",
+				"type": "uint256"
+			},
+			{
+				"name": "min",
+				"type": "uint256"
+			},
+			{
+				"name": "sec",
+				"type": "uint256"
+			},
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getStartTime",
+		"outputs": [
+			{
+				"name": "hour",
+				"type": "uint256"
+			},
+			{
+				"name": "min",
+				"type": "uint256"
+			},
+			{
+				"name": "sec",
+				"type": "uint256"
+			},
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getStartTimeStamp",
+		"outputs": [
+			{
+				"name": "timeStamp",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTimeDiff",
+		"outputs": [
+			{
+				"name": "hour",
+				"type": "uint256"
+			},
+			{
+				"name": "min",
+				"type": "uint256"
+			},
+			{
+				"name": "sec",
+				"type": "uint256"
+			},
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "showBalanceEth",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
 var simpleStorageContract;
 var simpleStorage;
 
@@ -50,21 +275,22 @@ function startApp() {
   getValue();
 }
 function getTime(flag){
-  alert("getTime");
-  alert(flag);
+  //alert("getTime");
+  //alert(flag);
   if(flag == 0){
-    simpleStorage.getStartTime(function(e,r){
-    document.getElementById('startTime').innerHTML=r.toNumber();
+    simpleStorage.getStartTimeStamp(function(e,r){
+	console.log(r);
+//    document.getElementById('startTime').innerHTML=r.toNumber();
     });
   }
   else{
     simpleStorage.getEndTime(function(e,r){
-    document.getElementById('endTime').innerHTML=r.toNumber();
+	console.log(r);
+//    document.getElementById('endTime').innerHTML=r.toNumber();
     });  
   }
 }
 function getKRW(){
-  alert("getKRW");
   simpleStorage.getKRW(function(e,r){
     document.getElementById('myKRW').innerHTML=r.toNumber();
   });
@@ -72,15 +298,16 @@ function getKRW(){
 function getValue() {
   getTime(0);
   getTime(1);
-  getKRW();
+  //	getKRW();
 }
 
 function setTime(flag) {
   var txid;
-  if (flag==0)
+  /*if (flag==0)
 	alert(1);
   else
     alert(2);
+*/
   /*simpleStorage.set(txid, function(e,r){
 	txid = r;
   });
@@ -98,14 +325,14 @@ function setTime(flag) {
  });*/
 }
 function requestKRW(){
-	alert("3");
+	//alert("3");
 }
 function initTime(){
   var txid;
   /*simpleStorage.set(txid, function(e,r){
 	txid = r;
   });*/
-  alert("4");
+  //alert("4");
 }
 
 function setValue() {

@@ -8,7 +8,6 @@ contract work_overtime{
         uint min;
         uint sec;
     }
-    Time minimumWorkingTime;
     Time startTime;
     Time endTime;
     
@@ -21,15 +20,11 @@ contract work_overtime{
     {
         startTimeStamp = 0;
         endTimeStamp   = 0;
-        minimumWorkingTime.hour = 0;
-        minimumWorkingTime.min  = 0;
-        minimumWorkingTime.sec  = 30;
     }
     function deposit() public payable returns(bool success) {
         balances[msg.sender] +=msg.value;
         return true;
     }
-    
     function showBalanceEth() public view returns(uint256){
         return balances[msg.sender] / (10**18);
     }
@@ -47,11 +42,6 @@ contract work_overtime{
         balances[msg.sender] -= valueWei;
         to.transfer(valueWei);
         return true;
-    }
-    function setMinimumWorkingTime(uint _hour, uint _min, uint _sec) public{
-        minimumWorkingTime.hour = _hour;
-        minimumWorkingTime.min  = _min;
-        minimumWorkingTime.sec  = _sec;
     }
     
     function setStartTime() public{
@@ -75,13 +65,8 @@ contract work_overtime{
     }
     function requestPayment(address to) public returns(bool success){
         require(startTimeStamp!=0 && endTimeStamp > startTimeStamp);
-        uint totalSeconds = minimumWorkingTime.hour * 3600 
-                            + minimumWorkingTime.min * 60    
-                            +  minimumWorkingTime.sec;
-        if(totalSeconds <= BokkyPooBahsDateTimeLibrary.diffSeconds(startTimeStamp, endTimeStamp)){
-          transferEth(to, 1);
-          success = true;
-        }
+        transferEth(to, 1);
+        success = true;
     }
     function getTimeDiff() view public returns(uint hour, uint min, uint sec, bool success){
         require (startTimeStamp > 0 && endTimeStamp >= startTimeStamp);
@@ -100,10 +85,6 @@ contract work_overtime{
         require(endTimeStamp > 0);
         (hour, min, sec) = (endTime.hour , endTime.min, endTime.sec);
         success = true;
-    }
-    function getMinimumWorkingTime() public view returns (uint hour, uint min, uint sec){
-        (hour, min , sec) = 
-            (minimumWorkingTime.hour, minimumWorkingTime.min, minimumWorkingTime.sec);
     }
     
 }
