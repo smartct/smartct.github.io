@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.2.3/milligram.min.css">
+  <title>스마트 계약 동작원리 이해를 위한 예제</title>
+  <style>
+    body {margin-left:50px;}
+    #storedData {font-size:300%; margin-right:10px;}
+    #newValue {width: 200px; margin-right:10px; text-align:right;}
+  </style>
+</head>
+<body>
+<h3>스마트 계약 동작원리 이해를 위한 예제</h3>
+<ul>
+  <li><button onclick="setTime(0)">야근 시작</button>
+  &nbsp;&nbsp;&nbsp;&nbsp;야근 시작시간: <span id="startTime"></span></li>
+  <li><button onclick="setTime(1)">야근 종료</button>
+  &nbsp;&nbsp;&nbsp;&nbsp;야근 종료시간: <span id="endTime"></span></li>
+  <li><button onclick="requestKRW()">야근 정산</button>
+  &nbsp;&nbsp;&nbsp;&nbsp;내 잔고(KRW): <span id="myKRW"></span></li>
+  <li><button onclick="initTime()">시간초기화</button>
+</body>
+<script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
+<script>
+var contractAddress = '0xde856446a16a7c24a9819767be3d05583aa3063d';
+var abi = [{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"set","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"}];
+var simpleStorageContract;
+var simpleStorage;
+
+window.addEventListener('load', function() {
+
+  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+  if (typeof web3 !== 'undefined') {
+    // Use Mist/MetaMask's provider
+    window.web3 = new Web3(web3.currentProvider);
+  } else {
+    console.log('No web3? You should consider trying MetaMask!')
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+  // Now you can start your app & access web3 freely:
+  startApp();
+});
+
+function startApp() {
+  simpleStorageContract = web3.eth.contract(abi);
+  simpleStorage = simpleStorageContract.at(contractAddress);
+  getValue();
+}
+function getTime(flag){
+  alert("getTime");
+  alert(flag);
+  if(flag == 0){
+    simpleStorage.getStartTime(function(e,r){
+    document.getElementById('startTime').innerHTML=r.toNumber();
+    });
+  }
+  else{
+    simpleStorage.getEndTime(function(e,r){
+    document.getElementById('endTime').innerHTML=r.toNumber();
+    });  
+  }
+}
+function getKRW(){
+  alert("getKRW");
+  simpleStorage.getKRW(function(e,r){
+    document.getElementById('myKRW').innerHTML=r.toNumber();
+  });
+}
+function getValue() {
+  getTime(0);
+  getTime(1);
+  getKRW();
+}
+
+function setTime(flag) {
+  var txid;
+  if (flag==0)
+	alert(1);
+  else
+    alert(2);
+  /*simpleStorage.set(txid, function(e,r){
+	txid = r;
+  });
+  var filter = web3.eth.filter('latest');
+  filter.watch(function(e, r) {
+    if(flag == 0)
+		getStartTime();
+	else
+		getEndTime();
+    web3.eth.getTransaction(txid, function(e,r){
+      if (r != null && r.blockNumber > 0) {
+        filter.stopWatching();
+      }
+   });
+ });*/
+}
+function requestKRW(){
+	alert("3");
+}
+function initTime(){
+  var txid;
+  /*simpleStorage.set(txid, function(e,r){
+	txid = r;
+  });*/
+  alert("4");
+}
+
+function setValue() {
+
+ // var newValue = document.getElementById('newValue').value;
+  var txid
+  simpleStorage.set(newValue, function(e,r){
+    document.getElementById('result').innerHTML = 'Transaction id: ' + r + '<span id="pending" style="color:red;">(Pending)</span>';
+    txid = r;
+  });
+  var filter = web3.eth.filter('latest');
+  filter.watch(function(e, r) {
+    getValue();
+    web3.eth.getTransaction(txid, function(e,r){
+      if (r != null && r.blockNumber > 0) {
+        document.getElementById('pending').innerHTML = '(기록된 블록: ' + r.blockNumber + ')';
+        document.getElementById('pending').style.cssText ='color:green;';
+        document.getElementById('storedData').style.cssText ='color:green; font-size:300%;';
+        filter.stopWatching();
+      }
+   });
+ });
+}
+
+</script>
+</html>
