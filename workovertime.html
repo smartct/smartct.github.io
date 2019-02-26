@@ -239,26 +239,32 @@ function getValue() {
 
 function setTime(flag) {
   var txid;
-  /*if (flag==0)
-	alert(1);
-  else
-    alert(2);
-*/
-  /*simpleStorage.set(txid, function(e,r){
-	txid = r;
-  });
+  if(flag == 0){
+	simpleStorage.setStartTime(function(e,r){
+		txid = r;
+	});
+  }
+  else{
+	simpleStorage.setEndTime(function(e,r){
+		txid = r ;
+	});
+  }
+
   var filter = web3.eth.filter('latest');
   filter.watch(function(e, r) {
-    if(flag == 0)
-		getStartTime();
-	else
-		getEndTime();
-    web3.eth.getTransaction(txid, function(e,r){
+    if(flag == 0){
+		getTime(0);
+	}
+	else{
+		getTime(1);
+	}
+    
+	web3.eth.getTransaction(txid, function(e,r){
       if (r != null && r.blockNumber > 0) {
         filter.stopWatching();
       }
    });
- });*/
+ });
 }
 function requestKRW(){
 	//alert("3");
