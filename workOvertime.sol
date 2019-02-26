@@ -30,11 +30,6 @@ contract work_overtime{
         to.transfer(valueWei);
         return true;
     }
-/*
-    function showBalanceEth() public view returns(uint256){
-        return balances[msg.sender] / (10**18);
-    }
-*/
 
     function setStartTime() public{
         // startTime can be initialized only once
