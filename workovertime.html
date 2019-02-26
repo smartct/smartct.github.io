@@ -14,18 +14,44 @@
 <body>
 <h3>스마트 계약 동작원리 이해를 위한 예제</h3>
 <ul>
-  <li><button onclick="setTime(0)">야근 시작</button>
+  <li> contract 주소 : <span id="contractAddress"></span></li>
+</ul>
+<span></span>
+
+<ul>
+  <li><button onclick="setStartTime()">야근 시작</button>
   &nbsp;&nbsp;&nbsp;&nbsp;야근 시작시간: <span id="startTime"></span></li>
-  <li><button onclick="setTime(1)">야근 종료</button>
+  <li><button onclick="setEndTime()">야근 종료</button>
   &nbsp;&nbsp;&nbsp;&nbsp;야근 종료시간: <span id="endTime"></span></li>
-  <li><button onclick="requestKRW()">야근 정산</button>
-  &nbsp;&nbsp;&nbsp;&nbsp;내 잔고(KRW): <span id="myKRW"></span></li>
+  <li><button onclick="requestPayment()">야근 정산</button></li>
   <li><button onclick="initTime()">시간초기화</button>
+</ul>
+<span></span>
+<ul>
+  <li> 초과근무 예산(ETH) : <span id="fsecEth"></span></li>
+  <li> 내 계좌 잔고(ETH) : <span id="myEth"></span></li>
+</ul>
+
+컨트랙트 소스
+<script src="https://gist.github.com/atomrigs/7c633570496b79623bed5d1286f93f3a.js"></script>
+
+
 </body>
 <script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
 <script>
-var contractAddress = '0x12f16c68e446dfa97bd469b517e810ee81a67c10';
+var contractAddress = '0x31ab55f930184c446cedcd301d82135e0cd4f239';
+var walletAddress = '0xD715C2a493E660EC42205319b42965DDfc15525B';    // sub wallet
+//var walletAddress = '0xf5b4f16cED4935582Bb0ed58743c2B9a1618B4b7';  // main wallet
 var abi = [
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "initTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"constant": true,
 		"inputs": [
@@ -66,20 +92,6 @@ var abi = [
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "showBalanceEth",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -179,12 +191,6 @@ var abi = [
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
-	},
-	{
-		"inputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
 	}
 ];
 var simpleStorageContract;
@@ -208,96 +214,144 @@ window.addEventListener('load', function() {
 function startApp() {
   simpleStorageContract = web3.eth.contract(abi);
   simpleStorage = simpleStorageContract.at(contractAddress);
+  document.getElementById('contractAddress').innerHTML = getLink(contractAddress);
   getValue();
 }
-function getTime(flag){
-  //alert("getTime");
-  //alert(flag);
-  if(flag == 0){
-    simpleStorage.getStartTime(function(e,r){
-	console.log(r);
-	document.getElementById('startTime').innerHTML=r.toNumber();
-    });
-  }
-  else{
-    simpleStorage.getEndTime(function(e,r){
-	console.log(r);
-    document.getElementById('endTime').innerHTML=r.toNumber();
-    	});  
-  }
+function getLink(addr) {
+  return '<a target="_blank" href=https://ropsten.etherscan.io/address/' + addr + '>' + addr +'</a>';
 }
-function getKRW(){
-  simpleStorage.getKRW(function(e,r){
-    document.getElementById('myKRW').innerHTML=r.toNumber();
+
+function addZero(i) {
+  if (i < 10) {
+    i = "0" + i;
+  }
+  return i;
+}
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = addZero(a.getDate());
+  var hour = addZero(a.getHours());
+  var min = addZero(a.getMinutes());
+  var sec = addZero(a.getSeconds());
+  var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+
+function getStartTime(){
+  simpleStorage.getStartTime(function(e,r){
+    console.log(r.toNumber());
+	if(r.toNumber() != 0 ){
+      document.getElementById('startTime').innerHTML = timeConverter(r.toNumber());
+	}
   });
 }
-function getValue() {
-  getTime(0);
-  getTime(1);
-  //	getKRW();
+function getEndTime()
+{
+  simpleStorage.getEndTime(function(e,r){
+    console.log(r.toNumber());
+	if(r.toNumber() != 0 ){
+      document.getElementById('endTime').innerHTML = timeConverter(r.toNumber());
+    }
+  });  
+}
+function getCompanyBalance(){
+  web3.eth.getBalance(contractAddress, function(e, r) {
+    if (e === null) {
+	  document.getElementById('fsecEth').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
+	  //console.log(r.toNumber());
+    }
+  });
+}
+function getMyBalance(){
+  web3.eth.getBalance(walletAddress, function(e, r) {
+    if (e === null) {
+	  document.getElementById('myEth').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
+	  //console.log(r.toNumber());
+    }
+  });
 }
 
-function setTime(flag) {
-  var txid;
-  if(flag == 0){
-	simpleStorage.setStartTime(function(e,r){
-		txid = r;
-	});
-  }
-  else{
-	simpleStorage.setEndTime(function(e,r){
-		txid = r ;
-	});
-  }
+function getValue() {
+  getStartTime();
+  getEndTime();
+  getCompanyBalance();
+  getMyBalance();
+}
 
+function setStartTime() {
+  var txid;
+  simpleStorage.setStartTime(function(e,r){
+	txid = r;
+  });
+  
   var filter = web3.eth.filter('latest');
   filter.watch(function(e, r) {
-    if(flag == 0){
-		getTime(0);
-	}
-	else{
-		getTime(1);
-	}
-    
 	web3.eth.getTransaction(txid, function(e,r){
       if (r != null && r.blockNumber > 0) {
+	    getStartTime();
         filter.stopWatching();
       }
    });
  });
 }
-function requestKRW(){
-	//alert("3");
-}
-function initTime(){
+
+function setEndTime() {
   var txid;
-  /*simpleStorage.set(txid, function(e,r){
+  simpleStorage.setEndTime(function(e,r){
 	txid = r;
-  });*/
-  //alert("4");
-}
-
-function setValue() {
-
- // var newValue = document.getElementById('newValue').value;
-  var txid
-  simpleStorage.set(newValue, function(e,r){
-    document.getElementById('result').innerHTML = 'Transaction id: ' + r + '<span id="pending" style="color:red;">(Pending)</span>';
-    txid = r;
   });
+  
   var filter = web3.eth.filter('latest');
   filter.watch(function(e, r) {
-    getValue();
-    web3.eth.getTransaction(txid, function(e,r){
+	web3.eth.getTransaction(txid, function(e,r){
       if (r != null && r.blockNumber > 0) {
-        document.getElementById('pending').innerHTML = '(기록된 블록: ' + r.blockNumber + ')';
-        document.getElementById('pending').style.cssText ='color:green;';
-        document.getElementById('storedData').style.cssText ='color:green; font-size:300%;';
+	    getEndTime();
         filter.stopWatching();
       }
    });
  });
 }
+
+function initTime(){
+  var txid;
+  simpleStorage.initTime(txid, function(e,r){
+	txid = r;
+  });
+ 
+  var filter = web3.eth.filter('latest');
+  filter.watch(function(e, r) {
+	web3.eth.getTransaction(txid, function(e,r){
+	  getStartTime();
+	  getEndTime();
+      if (r != null && r.blockNumber > 0) {
+        filter.stopWatching();
+      }
+   });
+ });
+}
+
+function requestPayment(){
+  var txid;
+  simpleStorage.requestPayment(walletAddress, function(e,r){
+	txid = r;
+  });
+ 
+  var filter = web3.eth.filter('latest');
+  filter.watch(function(e, r) {
+	web3.eth.getTransaction(txid, function(e,r){
+     if (r != null && r.blockNumber > 0) {
+        filter.stopWatching();
+		getCompanyBalance();
+        getMyBalance();
+      }
+   });
+ });
+}
+
+
 
 </script>
 </html>
