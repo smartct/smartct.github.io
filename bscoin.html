@@ -16,20 +16,20 @@
 <span></span>
 
 <ul>
-  <li><button onclick="buybscoin()">bs coin 구입</button>
+  <li><button onclick="buybscoin()">12 bs coin 구입(1ETH)</button>
 </ul>
 <span></span>
 <ul>
-  <li> bs coin 총 발행량 : <span id="fsecEth"></span></li>
-  <li> 나의 bs coin 보유량 : <span id="myEth"></span></li>
+  <li> bs coin 총 발행량 : <span id="totalSupply"></span></li>
+  <li> 나의 bs coin 보유량 : <span id="myBalance"></span></li>
 </ul>
 <ul>
-  <li>Smart contract 주소 : <span id="contractAddress"></span></li>
-  <li>내 계좌 주소 : <span id="walletAddress"></span></li>
+  <li>Developer 주소 : <span id="developerAddress"></span></li>
+  <li>ico 컨트랙트 주소 : <span id="contractAddress"></span></li>
 </ul>
 
 Smart Contract 소스
-<script src="https://gist.github.com/smartct/bef5216c2f6a6b8f676c57eb7d3e72bd.js"></script>
+<script src="https://gist.github.com/smartct/282e166d15a7efece04b3e1fa4a5036a.js"></script>
 
 
 </body>
@@ -40,37 +40,32 @@ var contractAddress = '0x0697aC2b3F99e71C469A9A2EC89eFe3770B1Fd90';    // sub wa
 
 var abi = [
 	{
-		"constant": false,
+		"constant": true,
 		"inputs": [],
-		"name": "deposit",
+		"name": "name",
 		"outputs": [
 			{
-				"name": "success",
-				"type": "bool"
+				"name": "",
+				"type": "string"
 			}
 		],
-		"payable": true,
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [],
-		"name": "initTime",
-		"outputs": [],
 		"payable": false,
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"constant": false,
 		"inputs": [
 			{
-				"name": "to",
+				"name": "spender",
 				"type": "address"
+			},
+			{
+				"name": "tokens",
+				"type": "uint256"
 			}
 		],
-		"name": "requestPayment",
+		"name": "approve",
 		"outputs": [
 			{
 				"name": "success",
@@ -82,21 +77,156 @@ var abi = [
 		"type": "function"
 	},
 	{
+		"constant": true,
+		"inputs": [],
+		"name": "startDate",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"name": "tokens",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "_totalSupply",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "bonusEnds",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "tokenOwner",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"name": "balance",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"constant": false,
 		"inputs": [],
-		"name": "setEndTime",
+		"name": "acceptOwnership",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"constant": false,
+		"constant": true,
 		"inputs": [],
-		"name": "setStartTime",
-		"outputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
 		"payable": false,
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -107,11 +237,11 @@ var abi = [
 				"type": "address"
 			},
 			{
-				"name": "value",
+				"name": "tokens",
 				"type": "uint256"
 			}
 		],
-		"name": "transferEth",
+		"name": "transfer",
 		"outputs": [
 			{
 				"name": "success",
@@ -123,20 +253,116 @@ var abi = [
 		"type": "function"
 	},
 	{
-		"constant": false,
-		"inputs": [
+		"constant": true,
+		"inputs": [],
+		"name": "endDate",
+		"outputs": [
 			{
-				"name": "value",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "withdrawEth",
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"name": "tokens",
+				"type": "uint256"
+			},
+			{
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "approveAndCall",
 		"outputs": [
 			{
 				"name": "success",
 				"type": "bool"
 			}
 		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "newOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"name": "tokens",
+				"type": "uint256"
+			}
+		],
+		"name": "transferAnyERC20Token",
+		"outputs": [
+			{
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "tokenOwner",
+				"type": "address"
+			},
+			{
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"name": "remaining",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -148,63 +374,70 @@ var abi = [
 		"type": "constructor"
 	},
 	{
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "fallback"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
-				"name": "balance",
-				"type": "uint256"
-			}
-		],
-		"name": "CurrentBalance",
-		"type": "event"
-	},
-	{
-		"constant": true,
-		"inputs": [
+				"indexed": true,
+				"name": "_from",
+				"type": "address"
+			},
 			{
-				"name": "",
+				"indexed": true,
+				"name": "_to",
 				"type": "address"
 			}
 		],
-		"name": "balances",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
+		"name": "OwnershipTransferred",
+		"type": "event"
 	},
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "getEndTime",
-		"outputs": [
+		"anonymous": false,
+		"inputs": [
 			{
-				"name": "timeStamp",
+				"indexed": true,
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "tokens",
 				"type": "uint256"
 			}
 		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
+		"name": "Transfer",
+		"type": "event"
 	},
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "getStartTime",
-		"outputs": [
+		"anonymous": false,
+		"inputs": [
 			{
-				"name": "timeStamp",
+				"indexed": true,
+				"name": "tokenOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "tokens",
 				"type": "uint256"
 			}
 		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
+		"name": "Approval",
+		"type": "event"
 	}
 ];
 var simpleStorageContract;
@@ -228,165 +461,59 @@ window.addEventListener('load', function() {
 function startApp() {
   simpleStorageContract = web3.eth.contract(abi);
   simpleStorage = simpleStorageContract.at(contractAddress);
+  document.getElementById('developerAddress').innerHTML = getLink(developerAddress);
   document.getElementById('contractAddress').innerHTML = getLink(contractAddress);
-  document.getElementById('walletAddress').innerHTML = getLink(walletAddress);
   getValue();
 }
 function getLink(addr) {
   return '<a target="_blank" href=https://ropsten.etherscan.io/address/' + addr + '>' + addr +'</a>';
 }
 
-function addZero(i) {
-  if (i < 10) {
-    i = "0" + i;
-  }
-  return i;
-}
-function timeConverter(UNIX_timestamp){
-  var a = new Date(UNIX_timestamp * 1000);
-  var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-  var year = a.getFullYear();
-  var month = months[a.getMonth()];
-  var date = addZero(a.getDate());
-  var hour = addZero(a.getHours());
-  var min = addZero(a.getMinutes());
-  var sec = addZero(a.getSeconds());
-  var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec ;
-  return time;
+function getValue() {
+   getTotalSupply();
+   getMyBalance();
 }
 
-function getStartTime(){
-  simpleStorage.getStartTime(function(e,r){
+function getTotalSupply(){
+  simpleStorage.totalSupply(function(e,r){
     console.log(r.toNumber());
-	if(r.toNumber() != 0 ){
-	  document.getElementById('startTime').innerHTML = timeConverter(r.toNumber());
-	}
-	else{
-	  document.getElementById('startTime').innerHTML = '';
-	}
-  });
-}
-function getEndTime(){
-  simpleStorage.getEndTime(function(e,r){
-    console.log(r.toNumber());
-	if(r.toNumber() != 0 ){
-      document.getElementById('endTime').innerHTML = timeConverter(r.toNumber());
-    }
-	else{
-	  document.getElementById('endTime').innerHTML = '';
-	}
-  });  
-}
-function getCompanyBalance(){
-  web3.eth.getBalance(contractAddress, function(e, r) {
-    if (e === null) {
-	  document.getElementById('fsecEth').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
-	  //console.log(r.toNumber());
-    }
+    document.getElementById('totalSupply').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
   });
 }
 function getMyBalance(){
-    web3.eth.getBalance(walletAddress, function(e, r) {
+  web3.eth.getAccounts(function(e, accounts) {
     if (e === null) {
-	  document.getElementById('myEth').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
-	  //console.log(r.toNumber());
-    }
+	  console.log(accounts[0]);
+	  simpleStorage.balanceOf(accounts[0],function(e,r){
+	  document.getElementById('myBalance').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
+      });
+	}
   });
 }
-function getAccounHistory(){
-  var transferEvent = simpleStorage.CurrentBalance({}, {fromBlock: 0, toBlock: 'latest'});
-  transferEvent.get((error, logs) => {
-    logs.forEach(log => console.log(log));
-	var table1 = document.getElementById("balanceHistory");
-	logs.forEach(function(log){
-	  var tr = document.createElement("tr");
-	  var td1 = document.createElement("td");
-	  td1.innerText = log.blockNumber;
-   	  var td2 = document.createElement("td");
-	  td2.innerText = window.web3.fromWei(log.args.balance, 'ether');
-	  tr.appendChild(td1);
-	  tr.appendChild(td2);
-	  table1.appendChild(tr);  
-	});
-  });
-}
-function getValue() {
-  getStartTime();
-  getEndTime();
-  getCompanyBalance();
-  getMyBalance();
-  getAccounHistory();
-}
-
-function setStartTime() {
+function buybscoin() {
   var txid;
-  simpleStorage.setStartTime(function(e,r){
-	txid = r;
+  web3.eth.getAccounts(function(e, accounts) {
+    if (e === null) {
+	  console.log(accounts[0]);
+      
+	  web3.eth.sendTransaction({
+        from : accounts[0],
+		to : contractAddress,
+		value : '1000000000000000000'
+	  },function(e,r){txid = r });
+	}
   });
-  
+
   var filter = web3.eth.filter('latest');
   filter.watch(function(e, r) {
 	web3.eth.getTransaction(txid, function(e,r){
       if (r != null && r.blockNumber > 0) {
-	    getStartTime();
-        filter.stopWatching();
+	    getValue();
+	    filter.stopWatching();
       }
    });
  });
-}
 
-function setEndTime() {
-  var txid;
-  simpleStorage.setEndTime(function(e,r){
-	txid = r;
-  });
-  
-  var filter = web3.eth.filter('latest');
-  filter.watch(function(e, r) {
-	web3.eth.getTransaction(txid, function(e,r){
-      if (r != null && r.blockNumber > 0) {
-	    getEndTime();
-        filter.stopWatching();
-      }
-   });
- });
-}
-
-function initTime(){
-  var txid;
-  simpleStorage.initTime(txid, function(e,r){
-	txid = r;
-  });
- 
-  var filter = web3.eth.filter('latest');
-  filter.watch(function(e, r) {
-	web3.eth.getTransaction(txid, function(e,r){
-      if (r != null && r.blockNumber > 0) {
-	    getStartTime();
-	    getEndTime();
-        filter.stopWatching();
-      }
-   });
- });
-}
-
-function requestPayment(){
-  var txid;
-  simpleStorage.requestPayment(walletAddress, function(e,r){
-	txid = r;
-  });
- 
-  var filter = web3.eth.filter('latest');
-  filter.watch(function(e, r) {
-	web3.eth.getTransaction(txid, function(e,r){
-     if (r != null && r.blockNumber > 0) {
-        filter.stopWatching();
-		getCompanyBalance();
-        getMyBalance();
-		getAccounHistory();
-      }
-   });
- });
 }
 
 

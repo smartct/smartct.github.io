@@ -234,7 +234,13 @@ window.addEventListener('load', function() {
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
   }
   // Now you can start your app & access web3 freely:
-  startApp();
+  web3.eth.getAccounts(function(e, accounts) {
+    if (e === null) {
+	  console.log("current wallet address is " + accounts[0]);
+      walletAddress = accounts[0];
+	  startApp();
+	}
+  });
 });
 
 function startApp() {
@@ -310,6 +316,10 @@ function getAccounHistory(){
   transferEvent.get((error, logs) => {
     logs.forEach(log => console.log(log));
 	var table1 = document.getElementById("balanceHistory");
+	while(table1.hasChildNodes())
+    {
+      table1.removeChild(table1.firstChild);
+    }
 	logs.forEach(function(log){
 	  var tr = document.createElement("tr");
 	  var td1 = document.createElement("td");
