@@ -47,7 +47,7 @@ Smart Contract 소스
 </body>
 <script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
 <script>
-var contractAddress = '0x8357606537c735d62c6f21b31210ac01cd80bb8d';
+var contractAddress = '0x00077edeca11aedb5554c3e35a5da08453f4f197';
 var walletAddress = '0x9cB40c32aEA2dEC0AC1e656A9dFF78634bb621CB';    // sub wallet
 
 var abi = [
@@ -241,6 +241,7 @@ window.addEventListener('load', function() {
 	  startApp();
 	}
   });
+  
 });
 
 function startApp() {
@@ -316,10 +317,6 @@ function getAccounHistory(){
   transferEvent.get((error, logs) => {
     logs.forEach(log => console.log(log));
 	var table1 = document.getElementById("balanceHistory");
-	while(table1.hasChildNodes())
-    {
-      table1.removeChild(table1.firstChild);
-    }
 	logs.forEach(function(log){
 	  var tr = document.createElement("tr");
 	  var td1 = document.createElement("td");
