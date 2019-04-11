@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.2.3/milligram.min.css">
+  <title>Smart Cotract 동작원리 이해를 위한 예제</title>
+  <style>
+    body {margin-left:50px;}
+    #storedData {font-size:300%; margin-right:10px;}
+    #newValue {width: 200px; margin-right:10px; text-align:right;}
+  </style>
+</head>
+<body>
+<h3>Smart Contract 동작원리 이해를 위한 예제</h3>
+<span></span>
+
+<ul>
+  <li><button onclick="startOverTime()">시작시간세팅</button>
+  &nbsp;&nbsp;&nbsp;&nbsp;실제근무 시작시간: <span id="startTime"></span></li>
+  <li><button onclick="finishOverTime()">종료시간세팅</button>
+  &nbsp;&nbsp;&nbsp;&nbsp;실제근무 종료시간: <span id="endTime"></span></li>
+</ul>
+<span></span>
+<ul>
+  <li> 시간외근무 예산(ETH) : <span id="fsecEth"></span></li>
+  <li> 내 계좌 잔고(ETH) : <span id="myEth"></span></li>
+</ul>
+<ul>
+  <li>Smart contract 주소 : <span id="contractAddress"></span></li>
+  <li>내 계좌 주소 : <span id="walletAddress"></span></li>
+  <li> 시간외근무 수당 지급 이력</li>
+  <table id="balanceHistory">
+    <tr>
+      <th width="150">Block number</th>
+      <th height="10">직원</th>
+	  <th height="10">시작시간</th>
+	  <th height="10">종료시간</th>
+	  <th height="10">지급금액(ETH)</th>
+    </tr>
+  </table>
+</ul>
+
+Smart Contract 소스
+<script src="https://gist.github.com/smartct/bef5216c2f6a6b8f676c57eb7d3e72bd.js"></script>
+
+
+</body>
+<script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
+<script>
+var contractAddress = '0x41b62f8b000e4590e2827593b91728c3d19267af';
+var walletAddress;
+
+var abi = [
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "deposit",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "finishOverTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "initTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "requestPayment",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "setEndTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "worker_name",
+				"type": "string"
+			}
+		],
+		"name": "setName",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "setStartTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "startOverTime",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawEth",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "senderName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "startTime",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "endTime",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "sendEth",
+		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getEndTime",
+		"outputs": [
+			{
+				"name": "timeStamp",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getStartTime",
+		"outputs": [
+			{
+				"name": "timeStamp",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+var simpleStorageContract;
+var simpleStorage;
+
+window.addEventListener('load', function() {
+
+  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+  if (typeof web3 !== 'undefined') {
+    // Use Mist/MetaMask's provider
+    window.web3 = new Web3(web3.currentProvider);
+  } else {
+    console.log('No web3? You should consider trying MetaMask!')
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+  // Now you can start your app & access web3 freely:
+  web3.eth.getAccounts(function(e, accounts) {
+    if (e === null) {
+	  console.log("current wallet address is " + accounts[0]);
+      walletAddress = accounts[0];
+	  startApp();
+	}
+  });
+});
+
+function startApp() {
+  simpleStorageContract = web3.eth.contract(abi);
+  simpleStorage = simpleStorageContract.at(contractAddress);
+  document.getElementById('contractAddress').innerHTML = getLink(contractAddress);
+  document.getElementById('walletAddress').innerHTML = getLink(walletAddress);
+  getValue();
+}
+function getLink(addr) {
+  return '<a target="_blank" href=https://ropsten.etherscan.io/address/' + addr + '>' + addr +'</a>';
+}
+
+function addZero(i) {
+  if (i < 10) {
+    i = "0" + i;
+  }
+  return i;
+}
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = addZero(a.getDate());
+  var hour = addZero(a.getHours());
+  var min = addZero(a.getMinutes());
+  var sec = addZero(a.getSeconds());
+  var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+
+function getStartTime(){
+  simpleStorage.getStartTime(function(e,r){
+    console.log(r.toNumber());
+	if(r.toNumber() != 0 ){
+	  document.getElementById('startTime').innerHTML = timeConverter(r.toNumber());
+	}
+	else{
+	  document.getElementById('startTime').innerHTML = '';
+	}
+  });
+}
+function getEndTime(){
+  simpleStorage.getEndTime(function(e,r){
+    console.log(r.toNumber());
+	if(r.toNumber() != 0 ){
+      document.getElementById('endTime').innerHTML = timeConverter(r.toNumber());
+    }
+	else{
+	  document.getElementById('endTime').innerHTML = '';
+	}
+  });  
+}
+function getCompanyBalance(){
+  web3.eth.getBalance(contractAddress, function(e, r) {
+    if (e === null) {
+	  document.getElementById('fsecEth').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
+	  //console.log(r.toNumber());
+    }
+  });
+}
+function getMyBalance(){
+    web3.eth.getBalance(walletAddress, function(e, r) {
+    if (e === null) {
+	  document.getElementById('myEth').innerHTML = window.web3.fromWei(r.toNumber(),'ether');
+	  //console.log(r.toNumber());
+    }
+  });
+}
+function getAccounHistory(){
+  var transferEvent = simpleStorage.sendEth({}, {fromBlock: 0, toBlock: 'latest'});
+  transferEvent.get((error, logs) => {
+    logs.forEach(log => console.log(log));
+	var table1 = document.getElementById("balanceHistory");
+	/*while(table1.hasChildNodes())
+    {
+      table1.removeChild(table1.firstChild);
+    }*/
+	logs.forEach(function(log){
+	  var tr = document.createElement("tr");
+	  var td1 = document.createElement("td");
+	  td1.innerText = log.blockNumber;
+	  var td2 = document.createElement("td");
+	  td2.innerText = log.args.senderName;
+	  var td3 = document.createElement("td");
+	  td3.innerText = timeConverter(log.args.startTime);
+	  var td4 = document.createElement("td");
+	  td4.innerText = timeConverter(log.args.endTime);
+   	  var td5 = document.createElement("td");
+	  td5.innerText = log.args.amount;
+	  tr.appendChild(td1);
+	  tr.appendChild(td2);
+	  tr.appendChild(td3);
+	  tr.appendChild(td4);
+	  tr.appendChild(td5);
+	  table1.appendChild(tr);  
+	});
+  });
+}
+function getValue() {
+  getStartTime();
+  getEndTime();
+  getCompanyBalance();
+  getMyBalance();
+  getAccounHistory();
+}
+function startOverTime() {	
+  var txid;
+  simpleStorage.startOverTime(txid, function(e,r){
+	txid = r;
+  });
+ 
+  var filter = web3.eth.filter('latest');
+  filter.watch(function(e, r) {
+	web3.eth.getTransaction(txid, function(e,r){
+      if (r != null && r.blockNumber > 0) {
+	    getStartTime();
+        filter.stopWatching();
+      }
+   });
+ });
+}
+
+function finishOverTime() {	
+  var txid;
+  simpleStorage.finishOverTime(txid, function(e,r){
+	txid = r;
+  });
+ 
+  var filter = web3.eth.filter('latest');
+  filter.watch(function(e, r) {
+	web3.eth.getTransaction(txid, function(e,r){
+      if (r != null && r.blockNumber > 0) {
+	    getEndTime();
+		getCompanyBalance();
+		getMyBalance();
+        filter.stopWatching();
+      }
+   });
+ }); 
+}
+
+
+
+</script>
+</html>
